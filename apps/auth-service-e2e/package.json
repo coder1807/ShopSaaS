@@ -1,0 +1,26 @@
+{
+  "name": "@shop-saa-s/auth-service-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@shop-saa-s/auth-service"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/auth-service-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@shop-saa-s/auth-service:build",
+          "@shop-saa-s/auth-service:serve"
+        ]
+      }
+    }
+  }
+}
