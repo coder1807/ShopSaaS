@@ -6,10 +6,11 @@ import proxy from 'express-http-proxy';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import axios from 'axios';
-import cookies from 'cookie-parser';
 import cookieParser from 'cookie-parser';
 
 const app = express();
+
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.use(
   cors({
@@ -37,13 +38,11 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-app.use('/', proxy('http://localhost:6001'));
-
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-
-app.get('/api', (req, res) => {
+app.get('/gateway-health', (req, res) => {
   res.send({ message: 'Welcome to api-gateway!' });
 });
+
+app.use('/', proxy('http://localhost:6001'));
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
