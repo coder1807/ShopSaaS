@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import * as path from 'path';
 
 const app = express();
