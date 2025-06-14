@@ -20,7 +20,6 @@
     "dep-graph": "npx nx dep-graph",
     "workspace-schematic": "npx nx workspace-schematic",
     "workspace-generator": "npx nx workspace-generator",
-    "postinstall": "npx nx postinstall",
     "postversion": "git push && git push --tags",
     "prettier": "npx prettier --write \"{apps,libs}/**/*.{ts,tsx,js,jsx,json,md}\""
   },
