@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { errorMiddleware } from '../../../packages/error-handler/error-middleware'; // disable eslint rule for module boundaries to allow importing from a shared package
 
 const app = express();
 
@@ -14,6 +16,8 @@ app.use(
 app.get('/', (req, res) => {
   res.send({ message: 'Hello API' });
 });
+
+app.use(errorMiddleware);
 
 const port = process.env.PORT || 6001;
 const server = app.listen(port, () => {
