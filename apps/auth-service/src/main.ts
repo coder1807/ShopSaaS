@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { errorMiddleware } from '../../../packages/error-handler/error-middleware'; // disable eslint rule for module boundaries to allow importing from a shared package
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -12,6 +13,9 @@ app.use(
     credentials: true, // Allow cookies to be sent
   })
 );
+
+app.use(express.json());
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.send({ message: 'Hello API' });
