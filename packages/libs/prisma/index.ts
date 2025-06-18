@@ -13,4 +13,4 @@ declare global {
 const prisma = global.prismadb ?? new PrismaClient();
 if (process.env.NODE_ENV !== 'production') global.prismadb = prisma; // Store the PrismaClient instance in global scope for development
 
-export { prisma };
+export default prisma;

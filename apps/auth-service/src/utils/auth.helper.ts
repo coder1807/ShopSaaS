@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import { ValidationError } from '@shared/error-handler';
+import { ValidationError } from '../../../../packages/error-handler';
 import { sendEmail } from './sendMail';
-import { redis } from '@shared/libs/redis';
+import redis from '../../../../packages/libs/redis';
 import { NextFunction } from 'express';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
