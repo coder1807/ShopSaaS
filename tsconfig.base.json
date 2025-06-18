@@ -19,7 +19,7 @@
     "customConditions": ["development"],
     "baseUrl": ".",
     "paths": {
-      "@shared/error-handler": ["packages/error-handler","packages/libs"]
+      "@shared/*": ["packages/*"],
     }
   }
 }

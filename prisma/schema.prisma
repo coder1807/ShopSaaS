@@ -25,5 +25,5 @@ model users {
   avatar    images?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  imagesId  String   @db.ObjectId
+  imagesId  String?  @db.ObjectId
 }

@@ -1,12 +1,13 @@
 import crypto from 'crypto';
-import { ValidationError } from '../../../../packages/error-handler';
+import { ValidationError } from '@shared/error-handler';
 import { sendEmail } from './sendMail';
-import redis from '../../../../packages/libs/redis';
+import { redis } from '@shared/libs/redis';
 import { NextFunction } from 'express';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const validateRegistrationData = ( // Function to validate registration data
+export const validateRegistrationData = (
+  // Function to validate registration data
   data: any,
   userType: 'user' | 'seller'
 ) => {
@@ -61,7 +62,7 @@ export const trackOtpRequests = async (email: string, next: NextFunction) => {
   const otpRequests = parseInt((await redis.get(otpRequestKey)) || '0'); // Get the current count of OTP requests or default to 0
 
   if (otpRequests >= 4) {
-    await redis.set(`otp_spam_locked:${email}`, 'locked', 'EX', 3600); // Lock for 1 hour
+    await redis.set(`otp_spam_lock:${email}`, 'lock', 'EX', 3600); // Lock for 1 hour
     return next(
       new ValidationError(
         'Too many OTP requests. Please wait 1 hour before requesting again.'
@@ -74,8 +75,8 @@ export const trackOtpRequests = async (email: string, next: NextFunction) => {
 
 export const sendOtp = async (
   // Function to send OTP
-  name: string,
   email: string,
+  name: string,
   template: string
 ) => {
   const otp = crypto.randomInt(100000, 999999).toString();
