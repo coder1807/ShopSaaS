@@ -60,3 +60,5 @@ export class RateLimitError extends AppError {
     super(message, 429);
   }
 }
+
+export { errorMiddleware } from './error-middleware';
