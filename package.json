@@ -25,7 +25,7 @@
   },
   "private": true,
   "dependencies": {
-    "@prisma/client": "^6.9.0",
+    "@prisma/client": "^6.10.1",
     "@typescript-eslint/scope-manager": "^8.34.0",
     "axios": "^1.9.0",
     "cookie-parser": "^1.4.7",
@@ -76,7 +76,7 @@
     "jest-environment-node": "^29.7.0",
     "nx": "21.2.0",
     "prettier": "^2.6.2",
-    "prisma": "^6.9.0",
+    "prisma": "^6.10.1",
     "react-refresh": "^0.10.0",
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",
