@@ -17,5 +17,9 @@
     "strict": true,
     "target": "es2022",
     "customConditions": ["development"],
+    "baseUrl": ".", // Base directory for non-relative module names
+    "paths": {
+      "@packages/*": ["packages/*"] // Alias for packages
+    }
   }
 }
