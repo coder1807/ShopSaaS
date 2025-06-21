@@ -7,6 +7,7 @@
     "build": "npx nx run-many --target=build --all --parallel",
     "test": "npx nx run-many --target=test --all --parallel",
     "lint": "npx nx run-many --target=lint --all --parallel",
+    "reset": "npx nx reset cache",
     "format": "npx nx format:write",
     "format:check": "npx nx format:check",
     "e2e": "npx nx run-many --target=e2e --all --parallel",
