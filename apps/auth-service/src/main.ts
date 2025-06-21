@@ -5,8 +5,8 @@ import cookieParser from 'cookie-parser';
 import router from './routes/auth.router';
 import swaggerUi from 'swagger-ui-express';
 
-const swaggerDocument = require('./swagger-output.json');
 const app = express();
+const swaggerDocument = require('./swagger-output.json');
 
 app.use(
   cors({
@@ -36,6 +36,7 @@ app.use(errorMiddleware);
 const port = process.env.PORT || 6001;
 const server = app.listen(port, () => {
   console.log(`Auth service listening at http://localhost:${port}/api`);
+  console.log(`API Docs available at http://localhost:${port}/api-docs`);
   console.log(`Swagger Docs available at http://localhost:${port}/docs`);
 });
 

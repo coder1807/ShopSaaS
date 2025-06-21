@@ -1,8 +1,10 @@
 import crypto from 'crypto';
-import { ValidationError } from '@packages/error-handler';
+import { AuthError, ValidationError } from '@packages/error-handler';
 import { sendEmail } from './sendMail';
 import redis from '@packages/libs/redis';
-import { NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import prisma from '@packages/libs/prisma';
+import bcrypt from 'bcryptjs';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -84,3 +86,35 @@ export const sendOtp = async (
   await redis.set(`otp:${email}`, otp, 'EX', 300); // Store OTP in Redis for 5 minutes
   await redis.set(`otp_cooldown:${email}`, 'true', 'EX', 60); // Set cooldown for 1 minute
 };
+
+export const verifyOtp = async (
+  // Function to verify OTP
+  email: string,
+  otp: string,
+  next: NextFunction
+) => {
+  const storedOtp = await redis.get(`otp:${email}`);
+  if (!storedOtp) {
+    throw new ValidationError('OTP has expired or does not exist!');
+  }
+
+  const failedAttemptsKey = `otp_attempts:${email}`;
+  const failedAttempts = parseInt((await redis.get(failedAttemptsKey)) || '0');
+
+  if (storedOtp !== otp) {
+    if (failedAttempts >= 4) {
+      await redis.set(`otp_lock:${email}`, 'locked', 'EX', 1800); // Lock for 30 minutes
+      await redis.del(`otp:${email}`, failedAttemptsKey); // Clear OTP and failed attempts
+      throw new ValidationError(
+        'Too many failed attempts. Your account is locked for 30 minutes!'
+      );
+    }
+    await redis.set(failedAttemptsKey, failedAttempts + 1, 'EX', 300); // Increment failed attempts and set expiration for 5 minutes
+    throw new ValidationError(
+      `Incorrect OTP. You have ${4 - failedAttempts} attempts left.`
+    );
+  }
+  await redis.del(`otp:${email}`, failedAttemptsKey); // Clear OTP and failed attempts on successful verification
+};
+
+
