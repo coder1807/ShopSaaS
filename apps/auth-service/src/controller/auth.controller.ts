@@ -11,7 +11,7 @@ import {
 } from '../utils/auth.helper';
 import prisma from '@packages/libs/prisma';
 import { AuthError, ValidationError } from '@packages/error-handler';
-import bcrypt from 'node_modules/bcryptjs';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { setCookie } from '../utils/cookies/setCookies';
 
@@ -31,8 +31,8 @@ export const userRegistration = async (
       return next(new ValidationError('User already exists with this email!'));
     }
 
-    await checkOtpRestrictions(email, next);
-    await trackOtpRequests(email, next);
+    await checkOtpRestrictions(email);
+    await trackOtpRequests(email);
     await sendOtp(email, name, 'user-activation-mail');
 
     res
@@ -111,12 +111,19 @@ export const loginUser = async (
     }
 
     // Generate access and refresh tokens
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+    if (!accessTokenSecret || !refreshTokenSecret) {
+      throw new ValidationError('Token secrets are not configured');
+    }
+
     const accessToken = jwt.sign(
       {
         id: user.id,
         role: 'user',
       },
-      process.env.ACCESS_TOKEN_SECRET as string,
+      accessTokenSecret,
       { expiresIn: '15m' }
     );
 
@@ -125,7 +132,7 @@ export const loginUser = async (
         id: user.id,
         role: 'user',
       },
-      process.env.REFRESH_TOKEN_SECRET as string,
+      refreshTokenSecret,
       { expiresIn: '7d' }
     );
 

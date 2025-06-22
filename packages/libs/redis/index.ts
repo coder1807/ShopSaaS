@@ -1,6 +1,9 @@
 import Redis from 'ioredis';
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const redis = new Redis(process.env.REDIS_DATABASE_URI!);
+const redisUri = process.env.REDIS_DATABASE_URI;
+if (!redisUri) {
+  throw new Error('REDIS_DATABASE_URI environment variable is required');
+}
+const redis = new Redis(redisUri);
 
 export default redis;

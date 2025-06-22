@@ -2,11 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "types": ["node", "express"], // Include Node.js and Express types
+    "types": ["node", "express"],
     "rootDir": "../../",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
   },
-  "include": ["src/**/*.ts", "../../packages/**/**.ts"], // Include all TypeScript files in src and packages directories
+  "include": ["src/**/*.ts", "../../packages/**/**.ts"],
   "exclude": [
     "out-tsc",
     "dist",
