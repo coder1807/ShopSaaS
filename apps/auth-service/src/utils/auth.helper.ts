@@ -1,15 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import crypto from 'crypto';
-import { AuthError, ValidationError } from '@packages/error-handler';
+import { ValidationError } from '@packages/error-handler';
 import { sendEmail } from './sendMail';
 import redis from '@packages/libs/redis';
 import { Request, Response, NextFunction } from 'express';
 import prisma from '@packages/libs/prisma';
-import bcrypt from 'bcryptjs';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Function to validate registration data
 export const validateRegistrationData = (
-  // Function to validate registration data
   data: any,
   userType: 'user' | 'seller'
 ) => {
@@ -29,37 +29,37 @@ export const validateRegistrationData = (
   }
 };
 
+// Function to check OTP restrictions
 export const checkOtpRestrictions = async (
-  // Function to check OTP restrictions
   email: string,
   next: NextFunction
 ) => {
+  // Check if the account is locked due to multiple failed attempts
   if (await redis.get(`otp_lock:${email}`)) {
-    // Check if the account is locked due to multiple failed attempts
     return next(
       new ValidationError(
         'Account is locked due to multiple failed attempts. Try again after 30 minutes.'
       )
     );
   }
+  // Check if the account is locked due to too many OTP requests
   if (await redis.get(`otp_spam_lock:${email}`)) {
-    // Check if the account is locked due to too many OTP requests
     return next(
       new ValidationError(
         'Too many OTP requests. Please wait 1 hour before requesting again.'
       )
     );
   }
+  // Check if the cooldown period is active
   if (await redis.get(`otp_cooldown:${email}`)) {
-    // Check if the cooldown period is active
     return next(
       new ValidationError('Please wait 1 minute before requesting a new OTP.')
     );
   }
 };
 
+// Function to track OTP requests and apply restrictions
 export const trackOtpRequests = async (email: string, next: NextFunction) => {
-  // Function to track OTP requests and apply restrictions
   const otpRequestKey = `otp_request_count:${email}`;
   const otpRequests = parseInt((await redis.get(otpRequestKey)) || '0'); // Get the current count of OTP requests or default to 0
 
@@ -75,8 +75,8 @@ export const trackOtpRequests = async (email: string, next: NextFunction) => {
   await redis.set(otpRequestKey, otpRequests + 1, 'EX', 3600); // Increment the count and set expiration for 1 hour
 };
 
+// Function to send OTP
 export const sendOtp = async (
-  // Function to send OTP
   email: string,
   name: string,
   template: string
@@ -87,8 +87,8 @@ export const sendOtp = async (
   await redis.set(`otp_cooldown:${email}`, 'true', 'EX', 60); // Set cooldown for 1 minute
 };
 
+// Function to verify OTP
 export const verifyOtp = async (
-  // Function to verify OTP
   email: string,
   otp: string,
   next: NextFunction
@@ -117,4 +117,63 @@ export const verifyOtp = async (
   await redis.del(`otp:${email}`, failedAttemptsKey); // Clear OTP and failed attempts on successful verification
 };
 
+// Function to handle forgot password
+export const handleForgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  userType: 'user' | 'seller'
+) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new ValidationError('Email is required!');
+    }
 
+    // Find user or seller in database
+    const user =
+      userType === 'user' &&
+      (await prisma.users.findUnique({
+        where: { email },
+      }));
+
+    if (!user) {
+      throw new ValidationError(`${userType} does not exist!`);
+    }
+
+    // Check OTP restrictions
+    await checkOtpRestrictions(email, next);
+    await trackOtpRequests(email, next);
+
+    // Generate OTP and send Email
+    await sendOtp(email, user.name, 'forgot-password-user-mail');
+
+    res.status(200).json({
+      message: 'OTP sent to your email. Please verify your account.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Function to handle verify forgot password OTP
+export const verifyForgotPasswordOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      throw new ValidationError('Email and OTP are required!');
+    }
+    await verifyOtp(email, otp, next);
+
+    res.status(200).json({
+      message: 'OTP verified successfully. You can now reset your password.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
