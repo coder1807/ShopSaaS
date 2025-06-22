@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import crypto from 'crypto';
 import { ValidationError } from '@packages/error-handler';
 import { sendEmail } from './sendMail';
@@ -29,36 +30,45 @@ export const validateRegistrationData = (
 };
 
 // Function to check OTP restrictions
-export const checkOtpRestrictions = async (email: string) => {
+export const checkOtpRestrictions = async (
+  email: string,
+  next: NextFunction
+) => {
   // Check if the account is locked due to multiple failed attempts
   if (await redis.get(`otp_lock:${email}`)) {
-    throw new ValidationError(
-      'Account is locked due to multiple failed attempts. Try again after 30 minutes.'
+    return next(
+      new ValidationError(
+        'Account is locked due to multiple failed attempts. Try again after 30 minutes.'
+      )
     );
   }
   // Check if the account is locked due to too many OTP requests
   if (await redis.get(`otp_spam_lock:${email}`)) {
-    throw new ValidationError(
-      'Too many OTP requests. Please wait 1 hour before requesting again.'
+    return next(
+      new ValidationError(
+        'Too many OTP requests. Please wait 1 hour before requesting again.'
+      )
     );
   }
   // Check if the cooldown period is active
   if (await redis.get(`otp_cooldown:${email}`)) {
-    throw new ValidationError(
-      'Please wait 1 minute before requesting a new OTP.'
+    return next(
+      new ValidationError('Please wait 1 minute before requesting a new OTP.')
     );
   }
 };
 
 // Function to track OTP requests and apply restrictions
-export const trackOtpRequests = async (email: string) => {
+export const trackOtpRequests = async (email: string, next: NextFunction) => {
   const otpRequestKey = `otp_request_count:${email}`;
   const otpRequests = parseInt((await redis.get(otpRequestKey)) || '0'); // Get the current count of OTP requests or default to 0
 
   if (otpRequests >= 4) {
     await redis.set(`otp_spam_lock:${email}`, 'lock', 'EX', 3600); // Lock for 1 hour
-    throw new ValidationError(
-      'Too many OTP requests. Please wait 1 hour before requesting again.'
+    return next(
+      new ValidationError(
+        'Too many OTP requests. Please wait 1 hour before requesting again.'
+      )
     );
   }
 
@@ -132,8 +142,8 @@ export const handleForgotPassword = async (
     }
 
     // Check OTP restrictions
-    await checkOtpRestrictions(email);
-    await trackOtpRequests(email);
+    await checkOtpRestrictions(email, next);
+    await trackOtpRequests(email, next);
 
     // Generate OTP and send Email
     await sendOtp(email, user.name, 'forgot-password-user-mail');
