@@ -51,6 +51,9 @@ const HeaderBottom = () => {
             } w-[260px] h-[400px] bg-[#f5f5f5]`}
           ></div>
         )}
+
+        {/* Navigation Link */}
+        <div className="flex items-center"></div>
       </div>
     </div>
   );

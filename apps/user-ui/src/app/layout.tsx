@@ -1,5 +1,5 @@
 import './global.css';
-import Header from './shared/widgets/header';
+import Header from '../shared/widgets';
 import { Poppins, Roboto } from 'next/font/google';
 
 const roboto = Roboto({
