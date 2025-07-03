@@ -94,12 +94,12 @@ const Signup = () => {
                 placeholder="coder1873"
                 className="w-full p-2 border border-gray-300 outline-0 !rounded mb-1"
                 {...register('name', {
-                  required: 'Email is required',
+                  required: 'Name is required',
                 })}
               />
-              {errors.email && (
+              {errors.name && (
                 <p className="text-red-500 text-sm">
-                  {String(errors.email.message)}
+                  {String(errors.name.message)}
                 </p>
               )}
 
