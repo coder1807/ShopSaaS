@@ -4,8 +4,8 @@ const GoogleButton = () => {
     <div className="w-full flex justify-center">
       <div className="h-[46px] cursor-pointer border border-blue-100 flex items-center gap-2 px-3 rounded my-2 bg-[rgba(210,227,252,0.3)]">
         <svg
-          width="400px"
-          height="400px"
+          width="30"
+          height="30"
           viewBox="0 0 16 16"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -27,6 +27,9 @@ const GoogleButton = () => {
             fill="#EB4335"
           />
         </svg>
+        <span className="text-[16px] opacity-[.8] font-medium font-Poppins">
+          Sign In With Google
+        </span>
       </div>
     </div>
   );
