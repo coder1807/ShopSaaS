@@ -1,4 +1,5 @@
 'use client';
+import { useMutation } from '@tanstack/react-query';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import GoogleButton from 'apps/user-ui/src/shared/components/google-button';
 import { Eye, EyeOff } from 'lucide-react';
@@ -18,7 +19,7 @@ const Signup = () => {
   const [serverError, setServerError] = useState<string | null>(null);
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
-  const [showOtp, setShowOtp] = useState(true);
+  const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [userData, setUserData] = useState<FormData | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -31,7 +32,15 @@ const Signup = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {};
+  const signupMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios;
+    },
+  });
+
+  const onSubmit = (data: FormData) => {
+    console.log(data);
+  };
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return;
