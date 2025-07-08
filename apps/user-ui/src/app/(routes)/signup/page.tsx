@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import axios, { AxiosError } from 'axios';
+import { verify } from 'crypto';
 
 type FormData = {
   name: string;
@@ -16,7 +18,6 @@ type FormData = {
 
 const Signup = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
   const [showOtp, setShowOtp] = useState(false);
@@ -32,14 +33,56 @@ const Signup = () => {
     formState: { errors },
   } = useForm<FormData>();
 
+  const startResendTimer = () => {
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const signupMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await axios;
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`,
+        data
+      );
+      return response.data;
+    },
+    // _ represent the response.data but unused
+    onSuccess: (_, formData) => {
+      setUserData(formData);
+      setShowOtp(true);
+      setCanResend(false);
+      setTimer(60);
+      startResendTimer();
+    },
+  });
+
+  const verifyOtpMutation = useMutation({
+    mutationFn: async () => {
+      if (!userData) return;
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`,
+        {
+          ...userData,
+          otp: otp.join(''), // concatenate arrays into strings to send to server
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      router.push('/login');
     },
   });
 
   const onSubmit = (data: FormData) => {
-    console.log(data);
+    signupMutation.mutate(data);
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -163,14 +206,11 @@ const Signup = () => {
 
               <button
                 type="submit"
+                disabled={signupMutation.isPending}
                 className="w-full text-lg cursor-pointer mt-4 bg-black text-white py-2 rounded-lg"
               >
-                Sign Up
+                {signupMutation.isPending ? ' Signing up ... ' : 'Sign Up'}
               </button>
-
-              {serverError && (
-                <p className="text-red-500 text-sm mt-2">{serverError}</p>
-              )}
             </form>
           ) : (
             <div>
@@ -193,9 +233,15 @@ const Signup = () => {
                   />
                 ))}
               </div>
-              <button className="w-full mt-4 text-lg cursor-pointer bg-blue-500 text-white py-2 rounded-lg">
-                Verify OTP
+
+              <button
+                className="w-full mt-4 text-lg cursor-pointer bg-blue-500 text-white py-2 rounded-lg"
+                disabled={verifyOtpMutation.isPending}
+                onClick={() => verifyOtpMutation.mutate()}
+              >
+                {verifyOtpMutation.isPending ? 'Verifying ...' : 'Verify OTP'}
               </button>
+
               <p className="text-center text-sm mt-4">
                 {canResend ? (
                   <button
@@ -208,6 +254,13 @@ const Signup = () => {
                   `Resend OTP in ${timer}s`
                 )}
               </p>
+              {verifyOtpMutation?.isError &&
+                verifyOtpMutation.error instanceof AxiosError && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {verifyOtpMutation.error.response?.data?.message ||
+                      verifyOtpMutation.error.message}
+                  </p>
+                )}
             </div>
           )}
         </div>

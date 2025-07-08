@@ -10,7 +10,7 @@ const swaggerDocument = require('./swagger-output.json');
 
 app.use(
   cors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000'], // Only allow frontend at port 3000
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Allow cookies to be sent
   })
