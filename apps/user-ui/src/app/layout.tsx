@@ -1,6 +1,7 @@
 import './global.css';
 import Header from '../shared/widgets';
 import { Poppins, Roboto } from 'next/font/google';
+import Providers from './providers';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -28,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} ${roboto.variable}`}>
-        <Header />
-        {children}
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

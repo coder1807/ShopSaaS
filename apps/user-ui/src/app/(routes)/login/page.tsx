@@ -14,7 +14,6 @@ type FormData = {
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
@@ -125,10 +124,6 @@ const Login = () => {
             >
               Login
             </button>
-
-            {serverError && (
-              <p className="text-red-500 text-sm mt-2">{serverError}</p>
-            )}
           </form>
         </div>
       </div>

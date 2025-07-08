@@ -14,13 +14,13 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.use(
   cors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000'], // Only allow frontend at port 3000
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Allow cookies to be sent
   })
 );
 
-app.use(morgan('dev'));
+app.use(morgan('dev')); // Popular HTTP request logger middleware for Node.js, automatically generating logs for incoming requests
 app.use(express.json({ limit: '100mb' })); // Limit request body size to 100mb to handle large payloads
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use(cookieParser());
