@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios, { AxiosError } from 'axios';
-import { verify } from 'crypto';
 
 type FormData = {
   name: string;
@@ -44,6 +43,7 @@ const Signup = () => {
         return prev - 1;
       });
     }, 1000);
+    return () => clearInterval(interval);
   };
 
   const signupMutation = useMutation({
@@ -62,11 +62,16 @@ const Signup = () => {
       setTimer(60);
       startResendTimer();
     },
+    onError: (error) => {
+      console.error('Signup failed:', error);
+    },
   });
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      if (!userData) return;
+      if (!userData) {
+        throw new Error('User data not available for OTP verification.');
+      }
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`,
         {
