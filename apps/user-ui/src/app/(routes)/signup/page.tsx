@@ -63,7 +63,7 @@ const Signup = () => {
       startResendTimer();
     },
     onError: (error) => {
-      console.error('Signup failed:', error);
+      console.error('Signup failed:', error.message);
     },
   });
 
@@ -113,7 +113,11 @@ const Signup = () => {
     }
   };
 
-  const resendOtp = () => {};
+  const resendOtp = () => {
+    if (userData) {
+      signupMutation.mutate(userData);
+    }
+  };
 
   return (
     <div className="w-full py-10 min-h-[85vh] bg-[#f1f1f1]">
@@ -231,7 +235,7 @@ const Signup = () => {
                       if (el) inputRefs.current[index] = el; // param el represent for HTMLInputElemt or null
                     }}
                     maxLength={1}
-                    className="w-12 h-12 text-center border border-gray-300 outline-none rounded-none"
+                    className="w-12 h-12 text-center border border-gray-300 outline-none rounded-xl"
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
@@ -261,7 +265,7 @@ const Signup = () => {
               </p>
               {verifyOtpMutation?.isError &&
                 verifyOtpMutation.error instanceof AxiosError && (
-                  <p className="text-red-500 text-sm mt-2">
+                  <p className="text-center text-red-500 text-sm mt-2">
                     {verifyOtpMutation.error.response?.data?.message ||
                       verifyOtpMutation.error.message}
                   </p>

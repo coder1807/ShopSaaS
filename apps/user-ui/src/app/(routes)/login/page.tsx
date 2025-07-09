@@ -1,4 +1,5 @@
 'use client';
+import { useMutation } from '@tanstack/react-query';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import GoogleButton from 'apps/user-ui/src/shared/components/google-button';
 import { Eye, EyeOff } from 'lucide-react';
@@ -6,6 +7,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import axios, { AxiosError } from 'axios';
+import { error } from 'console';
 
 type FormData = {
   email: string;
@@ -14,6 +17,7 @@ type FormData = {
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
@@ -23,7 +27,30 @@ const Login = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {};
+  const loginMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-user`,
+        data,
+        { withCredentials: true } // Allow sending cookies/headers authorize from browser
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setServerError(null);
+      router.push('/');
+    },
+    onError: (error: AxiosError) => {
+      const errorMessage =
+        (error.response?.data as { message?: string })?.message ||
+        'Invalid credentials!';
+      setServerError(errorMessage);
+    },
+  });
+
+  const onSubmit = (data: FormData) => {
+    loginMutation.mutate(data);
+  };
 
   return (
     <div className="w-full py-10 min-h-[85vh] bg-[#f1f1f1]">
@@ -121,9 +148,16 @@ const Login = () => {
             <button
               type="submit"
               className="w-full text-lg cursor-pointer bg-black text-white py-2 rounded-lg"
+              disabled={loginMutation.isPending}
             >
-              Login
+              {loginMutation?.isPending ? 'Logging in ...' : 'Log in'}
             </button>
+
+            {serverError && (
+              <p className="text-center text-red-500 text-sm mt-2">
+                {serverError}
+              </p>
+            )}
           </form>
         </div>
       </div>
