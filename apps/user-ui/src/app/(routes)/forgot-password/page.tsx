@@ -161,7 +161,7 @@ const ForgotPassword = () => {
           {step === 'email' && (
             <>
               <h3 className="text-3xl font-semibold text-center mb-2">
-                Login to ShopSaaS
+                Forgot Password
               </h3>
               <p className="text-center text-gray-500 mb-4">
                 {'Go back to?'}
@@ -296,7 +296,9 @@ const ForgotPassword = () => {
                     : 'Reset Password'}
                 </button>
                 {serverError && (
-                  <p className="text-red-500 text-sm mt-2">{serverError}</p>
+                  <p className="text-red-500 text-sm text-center mt-2">
+                    {serverError}
+                  </p>
                 )}
               </form>
             </>
