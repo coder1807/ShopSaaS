@@ -153,7 +153,7 @@ export const loginUser = async (
   }
 };
 
-// Function to refresh token user
+// Function to retrive access_token from refresh_token in cookies
 export const refreshToken = async (
   req: Request,
   res: Response,
@@ -166,6 +166,8 @@ export const refreshToken = async (
       return next(new ValidationError('Unauthorized! No refresh token.'));
     }
 
+    // Verify and decode the refresh token using the secret key from environment variables.
+    // The decoded token is expected to contain an 'id' and a 'role' field.
     const decoded = jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET as string
@@ -183,6 +185,8 @@ export const refreshToken = async (
       return next(new AuthError('Forbidden! User/Seller not found'));
     }
 
+    // Create a new access token by signing the user's id and role
+    // using the secret key from environment variables.
     const newAccessToken = jwt.sign(
       {
         id: decoded.id,
