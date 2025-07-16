@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { NextFunction, Request, Response } from 'express';
 import {
@@ -200,6 +201,16 @@ export const refreshToken = async (
     return res.status(201).json({ success: true });
   } catch (error) {
     return next(error);
+  }
+};
+
+// Function to get logged in user
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user; // get user data information from isAuthenticated middleware
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    next(error);
   }
 };
 
