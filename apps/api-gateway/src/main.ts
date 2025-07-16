@@ -15,7 +15,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(
   cors({
     origin: ['http://localhost:3000'], // Only allow frontend at port 3000
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow json or form data, authorize allow send token (JWT)
     credentials: true, // Allow cookies to be sent
   })
 );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { NextFunction, Request, Response } from 'express';
 import {
@@ -12,7 +13,7 @@ import {
 import prisma from '@packages/libs/prisma';
 import { AuthError, ValidationError } from '@packages/error-handler';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { setCookie } from '../utils/cookies/setCookies';
 
 // Function to handle user registration
@@ -150,6 +151,77 @@ export const loginUser = async (
     });
   } catch (error) {
     return next(error);
+  }
+};
+
+// Function to retrive access_token from refresh_token in cookies
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refreshToken = req.cookies.refresh_token;
+
+    if (!refreshToken) {
+      return next(new ValidationError('Unauthorized! No refresh token.'));
+    }
+
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+    if (!refreshTokenSecret) {
+      console.error('REFRESH_TOKEN_SECRET is not defined.');
+      return next(new Error('Internal server configuration error.'));
+    }
+    // Verify and decode the refresh token using the secret key from environment variables.
+    // The decoded token is expected to contain an 'id' and a 'role' field.
+    const decoded = jwt.verify(refreshToken, refreshTokenSecret as string) as {
+      id: string;
+      role: string;
+    };
+
+    if (typeof decoded !== 'object' || !decoded.id || !decoded.role) {
+      return next(new JsonWebTokenError('Forbidden! Invalid refresh token.'));
+    }
+
+    const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+
+    if (!user) {
+      return next(new AuthError('Forbidden! User not found'));
+    }
+
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+
+    if (!accessTokenSecret) {
+      console.error('ACCESS_TOKEN_SECRET is not defined.');
+      return next(new Error('Internal server configuration error.'));
+    }
+
+    // Create a new access token by signing the user's id and role
+    // using the secret key from environment variables.
+    const newAccessToken = jwt.sign(
+      {
+        id: decoded.id,
+        role: decoded.role,
+      },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      { expiresIn: '15m' }
+    );
+
+    setCookie(res, 'access_token', newAccessToken);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Function to get logged in user
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user; // get user data information from isAuthenticated middleware
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    next(error);
   }
 };
 
