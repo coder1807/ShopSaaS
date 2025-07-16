@@ -167,23 +167,34 @@ export const refreshToken = async (
       return next(new ValidationError('Unauthorized! No refresh token.'));
     }
 
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+    if (!refreshTokenSecret) {
+      console.error('REFRESH_TOKEN_SECRET is not defined.');
+      return next(new Error('Internal server configuration error.'));
+    }
     // Verify and decode the refresh token using the secret key from environment variables.
     // The decoded token is expected to contain an 'id' and a 'role' field.
-    const decoded = jwt.verify(
-      refreshToken,
-      process.env.REFRESH_TOKEN_SECRET as string
-    ) as { id: string; role: string };
+    const decoded = jwt.verify(refreshToken, refreshTokenSecret as string) as {
+      id: string;
+      role: string;
+    };
 
-    if (!decoded || !decoded.id || !decoded.role) {
+    if (typeof decoded !== 'object' || !decoded.id || !decoded.role) {
       return next(new JsonWebTokenError('Forbidden! Invalid refresh token.'));
     }
 
-    // let account;
-    // if (decoded.role === 'user')
     const user = await prisma.users.findUnique({ where: { id: decoded.id } });
 
     if (!user) {
-      return next(new AuthError('Forbidden! User/Seller not found'));
+      return next(new AuthError('Forbidden! User not found'));
+    }
+
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+
+    if (!accessTokenSecret) {
+      console.error('ACCESS_TOKEN_SECRET is not defined.');
+      return next(new Error('Internal server configuration error.'));
     }
 
     // Create a new access token by signing the user's id and role
@@ -198,7 +209,7 @@ export const refreshToken = async (
     );
 
     setCookie(res, 'access_token', newAccessToken);
-    return res.status(201).json({ success: true });
+    return res.status(200).json({ success: true });
   } catch (error) {
     return next(error);
   }

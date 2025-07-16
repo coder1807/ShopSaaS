@@ -149,7 +149,7 @@ const Login = () => {
               className="w-full text-lg cursor-pointer bg-black text-white py-2 rounded-lg"
               disabled={loginMutation.isPending}
             >
-              {loginMutation?.isPending ? 'Logging in ...' : 'Log in'}
+              {loginMutation.isPending ? 'Logging in ...' : 'Log in'}
             </button>
 
             {serverError && (

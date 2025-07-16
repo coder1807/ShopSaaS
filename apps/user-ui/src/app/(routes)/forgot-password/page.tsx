@@ -64,14 +64,15 @@ const ForgotPassword = () => {
       // cast data to string for safe message access
       const errorMessage =
         (error.response?.data as { message?: string })?.message ||
-        'Invalid OTP. Try again!';
+        'Failed to send OTP. Try again!';
       setServerError(errorMessage);
     },
   });
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      if (!userEmail) return;
+      if (!userEmail)
+        throw new Error('User email is not available for OTP verification.');
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-forgot-password-user`,
         { email: userEmail, otp: otp.join('') }
@@ -93,7 +94,7 @@ const ForgotPassword = () => {
 
   const resetPasswordMutation = useMutation({
     mutationFn: async ({ password }: { password: string }) => {
-      if (!password) return;
+      if (!password) throw new Error('Password is not available for reset.');
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/reset-password-user`,
         { email: userEmail, newPassword: password }

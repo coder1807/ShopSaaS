@@ -62,7 +62,7 @@ axiosInstance.interceptors.response.use(
       try {
         // refresh success
         await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URI}/auth/api/refresh-token-user`, // enpoint refresh token
+          `${process.env.NEXT_PUBLIC_SERVER_URI}/auth/api/refresh-token-user`, // endpoint refresh token
           {}, // dont need payload, just cookie
           { withCredentials: true } // ensure cookies sent with request
         );

@@ -36,16 +36,17 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
       where: { id: decoded.id },
     });
 
-    // assign user attribute with account object infomation in db to req
-    req.user = account;
-
     if (!account) {
       return res.status(401).json({ message: 'Account not found! ' });
     }
 
+    // assign user attribute with account object infomation in db to req
+    req.user = account;
+
     // if everything ok, continue send data to next middleware or route
     return next();
-  } catch {
+  } catch (error) {
+    console.error('Authentication error:', error);
     return res
       .status(401)
       .json({ message: 'Unauthorized! Token expired or invalid.' });
