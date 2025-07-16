@@ -3,8 +3,10 @@ import prisma from '@packages/libs/prisma';
 import { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
+// Function to confirm that user is authenticated
 const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
   try {
+    // token can be sent via cookie (access_token) or header (Authorization: Bearer <token>)
     const token =
       req.cookies.access_token || req.headers.authorization?.split(' ')[1];
 
@@ -34,12 +36,14 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
       where: { id: decoded.id },
     });
 
+    // assign user attribute with account object infomation in db to req
     req.user = account;
 
     if (!account) {
       return res.status(401).json({ message: 'Account not found! ' });
     }
 
+    // if everything ok, continue send data to next middleware or route
     return next();
   } catch {
     return res

@@ -40,7 +40,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // get original request failed then axios attach axios config into error object
+    // get original request failed then axios attach config into error object
     // if dont get original request,it will not know what is wrong with the request faling to retry the request
     const originalRequest = error.config;
 
@@ -83,3 +83,5 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export default axiosInstance;
