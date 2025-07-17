@@ -187,7 +187,7 @@ const Signup = () => {
                 <label className="block text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
-                  placeholder="0123456789"
+                  placeholder="+84 123 456 789"
                   className="w-full p-2 border border-gray-300 outline-0 rounded-[4px] mb-1"
                   {...register('phone_number', {
                     required: 'Phone Number is required',
