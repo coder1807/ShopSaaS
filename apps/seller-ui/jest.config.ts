@@ -8,9 +8,6 @@ const createJestConfig = nextJest({
 const config: Config = {
   displayName: '@shop-saa-s/seller-ui',
   preset: '../../jest.preset.js',
-  transform: {
-    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
-  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/apps/seller-ui',
   testEnvironment: 'jsdom',
