@@ -12,7 +12,9 @@ model images {
   file_id String
   url     String
   userId  String? @unique @db.ObjectId
+  shopId  String? @unique @db.ObjectId
   users   users?  @relation(fields: [userId], references: [id])
+  shops   shops?  @relation(fields: [shopId], references: [id])
 }
 
 model users {
@@ -24,4 +26,28 @@ model users {
   avatar    images?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model shops {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  bio      String?
+  category String
+  avatar   images?
+  sellers  sellers[]
+}
+
+model sellers {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String   @unique
+  phone_number String
+  country      String
+  password     String
+  stripeId     String?
+  shop         shops?   @relation(fields: [shopsId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  shopId       String?  @unique @db.ObjectId
+  shopsId      String?  @db.ObjectId
 }
