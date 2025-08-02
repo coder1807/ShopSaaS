@@ -18,23 +18,46 @@ model images {
 }
 
 model users {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String        @unique
+  password    String?
+  following   String[]
+  avatar      images?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  shopReviews shopReviews[]
+}
+
+model shopReviews {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  password  String?
-  following String[]
-  avatar    images?
+  userId    String   @db.ObjectId
+  user      users    @relation(fields: [userId], references: [id])
+  rating    Float
+  reviews   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  shopsId   String?  @db.ObjectId
+  shops     shops?   @relation(fields: [shopsId], references: [id])
 }
 
 model shops {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  bio      String?
-  category String
-  avatar   images?
-  sellers  sellers[]
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  bio           String?
+  category      String
+  avatar        images?
+  coverBanner   String?
+  address       String
+  opening_hours String?
+  website       String?
+  socialLinks   Json[]
+  ratings       Float         @default(0)
+  reviews       shopReviews[]
+  sellerId      String        @unique @db.ObjectId
+  sellers       sellers       @relation(fields: [sellerId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model sellers {
@@ -45,9 +68,9 @@ model sellers {
   country      String
   password     String
   stripeId     String?
-  shop         shops?   @relation(fields: [shopsId], references: [id])
+  shop         shops?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  shopId       String?  @unique @db.ObjectId
+  shopId       String?  @db.ObjectId
   shopsId      String?  @db.ObjectId
 }
