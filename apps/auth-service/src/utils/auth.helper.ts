@@ -5,7 +5,6 @@ import { sendEmail } from './sendMail';
 import redis from '@packages/libs/redis';
 import { Request, Response, NextFunction } from 'express';
 import prisma from '@packages/libs/prisma';
-import bcrypt from 'bcryptjs';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
