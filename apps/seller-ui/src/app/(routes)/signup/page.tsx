@@ -9,15 +9,18 @@ import { useForm } from 'react-hook-form';
 import axios, { AxiosError } from 'axios';
 import { countries } from 'apps/seller-ui/src/utils/countries';
 import Link from 'next/link';
+import CreateShop from 'apps/seller-ui/src/shared/modules/auth/create-shop';
+import { StripeLogo } from 'apps/seller-ui/src/assets/svgs/stripe-logo';
 
 const Signup = () => {
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(3);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [userData, setUserData] = useState<FormData | null>(null);
+  const [sellerData, setSellerData] = useState<FormData | null>(null);
+  const [sellerId, setSellerId] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const router = useRouter();
@@ -45,14 +48,14 @@ const Signup = () => {
   const signupMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`,
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-registration`,
         data
       );
       return response.data;
     },
     // _ represent the response.data but unused
     onSuccess: (_, formData) => {
-      setUserData(formData);
+      setSellerData(formData);
       setShowOtp(true);
       setCanResend(false);
       setTimer(60);
@@ -65,20 +68,21 @@ const Signup = () => {
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      if (!userData) {
+      if (!sellerData) {
         throw new Error('User data not available for OTP verification.');
       }
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`,
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-seller`,
         {
-          ...userData,
+          ...sellerData,
           otp: otp.join(''), // concatenate arrays into strings to send to server
         }
       );
       return response.data;
     },
-    onSuccess: () => {
-      router.push('/login');
+    onSuccess: (data) => {
+      setSellerId(data?.seller?.id);
+      setActiveStep(2); // go to next step
     },
   });
 
@@ -110,8 +114,23 @@ const Signup = () => {
   };
 
   const resendOtp = () => {
-    if (userData) {
-      signupMutation.mutate(userData);
+    if (sellerData) {
+      signupMutation.mutate(sellerData);
+    }
+  };
+
+  const connectStripe = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_URI}/api/create-stripe-link`,
+        { sellerId }
+      );
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Stripe Connection Error: ', error);
     }
   };
 
@@ -187,7 +206,7 @@ const Signup = () => {
                 <label className="block text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
-                  placeholder="+84 123 456 789"
+                  placeholder="+84123456789"
                   className="w-full p-2 border border-gray-300 outline-0 rounded-[4px] mb-1"
                   {...register('phone_number', {
                     required: 'Phone Number is required',
@@ -335,6 +354,21 @@ const Signup = () => {
               </div>
             )}
           </>
+        )}
+        {activeStep === 2 && (
+          <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
+        )}
+        {activeStep === 3 && (
+          <div className="text-center">
+            <h3 className="text-2xl font-semibold">Withdraw Method</h3>
+            <br />
+            <button
+              className="w-full m-auto flex items-center justify-center gap-3 text-lg bg-[#334155] text-white py-2 rounded-lg"
+              onClick={connectStripe}
+            >
+              Connect Stripe <StripeLogo />
+            </button>
+          </div>
         )}
       </div>
     </div>
